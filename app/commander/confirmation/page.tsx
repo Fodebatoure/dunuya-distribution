@@ -70,9 +70,9 @@ export default async function ConfirmationPage({
 
           <div className="space-y-3">
             {[
-              { label: 'Orange Money', num: '07 XX XX XX XX', color: 'bg-orange-100 text-orange-700' },
+              { label: 'Orange Money', num: '07 04 36 30 81', color: 'bg-orange-100 text-orange-700' },
               { label: 'MTN Mobile Money', num: '05 XX XX XX XX', color: 'bg-yellow-100 text-yellow-700' },
-              { label: 'Wave', num: '01 XX XX XX XX', color: 'bg-blue-100 text-blue-700' },
+              { label: 'Wave', num: '07 04 36 30 81', color: 'bg-blue-100 text-blue-700' },
               { label: 'Moov Money', num: '01 XX XX XX XX', color: 'bg-teal-100 text-teal-700' },
             ].map((op) => (
               <div key={op.label} className="flex items-center justify-between">
