@@ -103,7 +103,7 @@ export async function createCommande(
     .single()
 
   if (commandeError || !commande) {
-    return { error: 'Erreur lors de la création de la commande.' }
+    return { error: `Erreur Supabase (commande) : ${commandeError?.message ?? 'réponse vide'}` }
   }
 
   // 4. Vérifier et associer le parrain
@@ -216,22 +216,29 @@ export async function createParrain(
 ): Promise<{ error: string | null; success: boolean }> {
   const nom = (formData.get('nom') as string).trim()
   const telephone = (formData.get('telephone') as string).trim()
+  const codeManuel = (formData.get('code') as string | null)?.trim().toUpperCase() || null
 
   if (!nom || !telephone) {
     return { error: 'Nom et téléphone requis.', success: false }
   }
 
-  // Générer un code unique : initiales + 4 chiffres aléatoires
-  const initiales = nom
-    .split(' ')
-    .map((w) => w[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 3)
-  const code = `${initiales}${Math.floor(1000 + Math.random() * 9000)}`
+  // Code : manuel si fourni, sinon initiales + 4 chiffres aléatoires
+  let code: string
+  if (codeManuel && codeManuel.length >= 3) {
+    code = codeManuel
+  } else {
+    const initiales = nom.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 3)
+    code = `${initiales}${Math.floor(1000 + Math.random() * 9000)}`
+  }
+
+  // Vérifier que le code n'existe pas déjà
+  const supabaseCheck = getSupabaseServerClient()
+  const { data: existing } = await supabaseCheck.from('parrains').select('id').eq('code', code).single()
+  if (existing) {
+    return { error: `Le code "${code}" est déjà utilisé. Choisissez un autre.`, success: false }
+  }
 
   const supabase = getSupabaseServerClient()
-
   const { error } = await supabase.from('parrains').insert({
     nom,
     telephone,
@@ -266,6 +273,17 @@ export async function supprimerCommande(commandeId: string): Promise<{ error: st
 }
 
 // ─── Commissions ─────────────────────────────────────────────────────────────
+
+export async function supprimerParrain(parrainId: string): Promise<{ error: string | null }> {
+  const supabase = getSupabaseServerClient()
+  // Détacher les commandes liées (on garde les commandes, on retire juste le parrain)
+  await supabase.from('commissions').delete().eq('parrain_id', parrainId)
+  await supabase.from('commandes').update({ parrain_id: null }).eq('parrain_id', parrainId)
+  const { error } = await supabase.from('parrains').delete().eq('id', parrainId)
+  if (error) return { error: `Erreur suppression : ${error.message}` }
+  revalidatePath('/admin')
+  return { error: null }
+}
 
 export async function marquerCommissionPayee(commissionId: string) {
   const supabase = getSupabaseServerClient()

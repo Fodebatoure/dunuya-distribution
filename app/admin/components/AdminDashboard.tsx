@@ -2,7 +2,7 @@
 
 import { useState, useActionState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { enregistrerPaiement, createParrain, adminLogout, supprimerCommande } from '@/app/actions'
+import { enregistrerPaiement, createParrain, adminLogout, supprimerCommande, supprimerParrain } from '@/app/actions'
 import type { CommandeAvecDetails, ClientAvecStats, ParrainAvecStats } from '@/lib/types'
 import { MODES_PAIEMENT, MONTANT_TRANCHES, MONTANT_DIRECT } from '@/lib/types'
 import { COMMUNES_ABIDJAN, AUTRES_VILLES } from '@/lib/zones'
@@ -176,6 +176,18 @@ function ModalParrain({ onClose }: { onClose: () => void }) {
               required
               placeholder="07 XX XX XX XX"
               className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1D9E75]"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Code parrain <span className="text-gray-400 font-normal">(optionnel — généré automatiquement si vide)</span>
+            </label>
+            <input
+              name="code"
+              type="text"
+              placeholder="Ex: PASTEUR01"
+              maxLength={12}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1D9E75] uppercase"
             />
           </div>
 
@@ -503,6 +515,17 @@ export default function AdminDashboard({ stats, commandes, clients, parrains }: 
                         </p>
                       </div>
                       <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          onClick={async () => {
+                            if (!confirm(`Supprimer le parrain ${p.nom} (${p.code}) ? Ses commissions seront effacées.`)) return
+                            const result = await supprimerParrain(p.id)
+                            if (result.error) alert(result.error)
+                            else router.refresh()
+                          }}
+                          className="text-xs bg-red-100 text-red-600 px-2.5 py-1.5 rounded-lg font-medium hover:bg-red-200 transition-colors"
+                        >
+                          ✕
+                        </button>
                         <a
                           href={whatsappLink(
                             p.telephone,
