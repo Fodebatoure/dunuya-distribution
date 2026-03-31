@@ -3,7 +3,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Dunuya Distribution',
-  description: 'Eau propre pour toutes les familles',
+  description: 'Eau filtrée et la santé pour toute la famille',
 }
 
 export default function RootLayout({
