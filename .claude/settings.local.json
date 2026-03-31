@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc:*)",
+      "Bash(npm run:*)",
+      "Bash(cmd.exe /c \"taskkill /PID 4000 /F\" 2>&1)",
+      "Bash(cmd.exe /c \"netstat -ano | findstr :3000\" 2>&1)",
+      "Bash(cmd.exe /c \"netstat -ano | findstr LISTEN\")"
+    ]
+  }
+}

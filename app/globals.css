@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+:root {
+  --dunuya: #1D9E75;
+  --dunuya-dark: #17856A;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background-color: #f9fafb;
+  color: #111827;
+}
