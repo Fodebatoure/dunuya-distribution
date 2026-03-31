@@ -76,7 +76,7 @@ export default function CommanderPage({
                 <div className="text-xs font-semibold uppercase tracking-wide text-[#1D9E75] mb-0.5">
                   Réservation
                 </div>
-                <div className="font-bold text-gray-900">Je réserve, je paie à la livraison</div>
+                <div className="font-bold text-gray-900">Je réserve maintenant et paie le solde à la livraison</div>
                 <div className="text-xs text-gray-500 mt-0.5">
                   {MONTANT_RESERVATION_ACOMPTE.toLocaleString('fr-CI')} FCFA maintenant
                   {' '}+ {MONTANT_RESERVATION_SOLDE.toLocaleString('fr-CI')} FCFA à la livraison
