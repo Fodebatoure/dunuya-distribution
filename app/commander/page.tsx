@@ -33,7 +33,7 @@ export default function CommanderPage({
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Commander ma fontaine</h1>
           <p className="text-gray-500 mt-1 text-sm">
-            Eau filtrée propre chaque jour, sans électricité
+            Santé · Économie · Environnement
           </p>
         </div>
 
