@@ -62,41 +62,45 @@ export default async function ConfirmationPage({
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4">
           <h2 className="font-semibold text-gray-900 mb-1">Effectuez votre paiement</h2>
           <p className="text-sm text-gray-500 mb-5">
-            Envoyez{' '}
+            Montant à payer :{' '}
             <span className="font-bold text-gray-900">
               {(premierMontant * (commande?.quantite ?? 1)).toLocaleString('fr-CI')} FCFA
             </span>
-            {' '}via Wave ou Orange Money
           </p>
 
-          {/* Numéro à envoyer */}
-          <div className="bg-gray-50 rounded-2xl p-5 mb-5 text-center">
-            <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold mb-2">Numéro à utiliser</p>
-            <p className="text-3xl font-mono font-bold text-gray-900 tracking-wider mb-3">07 04 36 30 81</p>
-            <CopyButton text="0704363081" />
-          </div>
-
-          {/* Étapes */}
-          <div className="space-y-3 mb-5">
-            {[
-              { step: '1', text: 'Ouvrez votre application Wave ou Orange Money' },
-              { step: '2', text: 'Appuyez sur « Envoyer » ou « Payer »' },
-              { step: '3', text: `Entrez le numéro ci-dessus et le montant de ${(premierMontant * (commande?.quantite ?? 1)).toLocaleString('fr-CI')} FCFA` },
-              { step: '4', text: `Dans le commentaire, écrivez la référence : ${ref}` },
-            ].map(({ step, text }) => (
-              <div key={step} className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-[#1D9E75] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
-                  {step}
-                </div>
-                <p className="text-sm text-gray-600">{text}</p>
+          {/* Bouton Wave — lien direct avec montant pré-rempli */}
+          <a
+            href={`https://pay.wave.com/m/M_ci_CCtNzviEb1yB/c/ci/?amount=${premierMontant * (commande?.quantite ?? 1)}`}
+            className="flex items-center justify-between w-full bg-[#1A73E8] text-white rounded-2xl px-5 py-4 mb-3 active:opacity-80"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center font-bold">W</div>
+              <div className="text-left">
+                <p className="font-bold text-sm">Payer avec Wave</p>
+                <p className="text-xs text-white/75">
+                  {(premierMontant * (commande?.quantite ?? 1)).toLocaleString('fr-CI')} FCFA · montant pré-rempli
+                </p>
               </div>
-            ))}
+            </div>
+            <svg className="w-5 h-5 text-white/80 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </a>
+
+          {/* Orange Money — numéro + copier */}
+          <div className="border border-gray-100 rounded-2xl px-5 py-4 mb-5">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-bold px-2 py-1 rounded-full bg-orange-100 text-orange-700">Orange Money</span>
+              <CopyButton text="0704363081" />
+            </div>
+            <p className="text-2xl font-mono font-bold text-gray-900 mt-2">07 04 36 30 81</p>
+            <p className="text-xs text-gray-400 mt-1">Envoyer {(premierMontant * (commande?.quantite ?? 1)).toLocaleString('fr-CI')} FCFA à ce numéro</p>
           </div>
 
-          {/* Opérateurs acceptés */}
-          <div className="flex gap-2">
-            <span className="text-xs font-semibold px-3 py-1.5 rounded-full bg-[#1A73E8]/10 text-[#1A73E8]">Wave</span>
-            <span className="text-xs font-semibold px-3 py-1.5 rounded-full bg-orange-100 text-orange-700">Orange Money</span>
+          <div className="bg-[#1D9E75]/5 rounded-xl p-3">
+            <p className="text-xs text-[#1D9E75] font-medium">
+              Mentionnez la référence <strong>{ref}</strong> dans le commentaire de votre paiement.
+            </p>
           </div>
         </div>
 
