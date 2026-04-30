@@ -60,41 +60,29 @@ export default async function ConfirmationPage({
 
         {/* Instructions paiement */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4">
-          <h2 className="font-semibold text-gray-900 mb-1">Effectuez votre paiement</h2>
-          <p className="text-sm text-gray-500 mb-5">
-            Montant à payer :{' '}
-            <span className="font-bold text-gray-900">
-              {(premierMontant * (commande?.quantite ?? 1)).toLocaleString('fr-CI')} FCFA
-            </span>
-          </p>
+          <h2 className="font-semibold text-gray-900 mb-2">Comment payer ?</h2>
 
-          {/* Bouton Wave — lien direct avec montant pré-rempli */}
-          <a
-            href={`https://pay.wave.com/m/M_ci_CCtNzviEb1yB/c/ci/?amount=${premierMontant * (commande?.quantite ?? 1)}`}
-            className="flex items-center justify-between w-full bg-[#1A73E8] text-white rounded-2xl px-5 py-4 mb-3 active:opacity-80"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center font-bold">W</div>
-              <div className="text-left">
-                <p className="font-bold text-sm">Payer avec Wave</p>
-                <p className="text-xs text-white/75">
-                  {(premierMontant * (commande?.quantite ?? 1)).toLocaleString('fr-CI')} FCFA · montant pré-rempli
-                </p>
-              </div>
+          {/* Wave — lien envoyé par WhatsApp */}
+          <div className="bg-[#1A73E8]/5 border border-[#1A73E8]/20 rounded-2xl px-5 py-4 mb-3">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-6 h-6 rounded-full bg-[#1A73E8] flex items-center justify-center text-white text-xs font-bold">W</div>
+              <span className="text-sm font-bold text-[#1A73E8]">Wave</span>
             </div>
-            <svg className="w-5 h-5 text-white/80 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </a>
+            <p className="text-sm text-gray-700">
+              Nous vous enverrons un <strong>lien de paiement Wave</strong> directement par WhatsApp sous peu. Cliquez dessus pour payer en un tap.
+            </p>
+          </div>
 
           {/* Orange Money — numéro + copier */}
-          <div className="border border-gray-100 rounded-2xl px-5 py-4 mb-5">
-            <div className="flex items-center justify-between mb-1">
+          <div className="border border-gray-100 rounded-2xl px-5 py-4 mb-4">
+            <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-bold px-2 py-1 rounded-full bg-orange-100 text-orange-700">Orange Money</span>
               <CopyButton text="0704363081" />
             </div>
-            <p className="text-2xl font-mono font-bold text-gray-900 mt-2">07 04 36 30 81</p>
-            <p className="text-xs text-gray-400 mt-1">Envoyer {(premierMontant * (commande?.quantite ?? 1)).toLocaleString('fr-CI')} FCFA à ce numéro</p>
+            <p className="text-2xl font-mono font-bold text-gray-900">07 04 36 30 81</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Envoyez <span className="font-semibold">{(premierMontant * (commande?.quantite ?? 1)).toLocaleString('fr-CI')} FCFA</span> à ce numéro
+            </p>
           </div>
 
           <div className="bg-[#1D9E75]/5 rounded-xl p-3">
