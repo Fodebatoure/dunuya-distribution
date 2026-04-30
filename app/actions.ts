@@ -296,6 +296,16 @@ export async function supprimerCommande(commandeId: string): Promise<{ error: st
   return { error: null }
 }
 
+// ─── Mode paiement souhaité ───────────────────────────────────────────────────
+
+export async function saveModePaiement(commandeId: string, mode: 'wave' | 'orange') {
+  const supabase = getSupabaseServerClient()
+  await supabase
+    .from('commandes')
+    .update({ mode_paiement_souhaite: mode })
+    .eq('id', commandeId)
+}
+
 // ─── Commissions ─────────────────────────────────────────────────────────────
 
 export async function supprimerParrain(parrainId: string): Promise<{ error: string | null }> {

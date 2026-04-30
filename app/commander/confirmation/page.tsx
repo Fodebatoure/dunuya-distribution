@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { getSupabaseServerClient } from '@/lib/supabase'
-import CopyButton from './CopyButton'
+import PaymentMethodSelector from './PaymentMethodSelector'
 
 export default async function ConfirmationPage({
   searchParams,
@@ -29,13 +29,16 @@ export default async function ConfirmationPage({
     .eq('reference', ref)
     .single()
 
-  const premierMontant = commande?.type === 'direct' ? 43000 : 15000
+  const premierMontant = (commande?.type === 'direct' ? 43000 : 15000) * (commande?.quantite ?? 1)
   const isReservation = commande?.type === 'reservation'
   const isPrevente = commande?.type === 'prevente'
+  const prenom = commande?.clients?.nom?.split(' ')[0] || ''
+  const telephone = commande?.clients?.telephone || null
 
   return (
     <main className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-md mx-auto">
+
         {/* Succès */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#1D9E75] mb-4">
@@ -44,9 +47,11 @@ export default async function ConfirmationPage({
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Commande confirmée !</h1>
-          <p className="text-gray-500 mt-1 text-sm">
-            Merci {commande?.clients?.nom?.split(' ')[0] || ''}, nous avons bien reçu votre commande.
-          </p>
+          {prenom && (
+            <p className="text-gray-500 mt-1 text-sm">
+              Merci {prenom}, nous avons bien reçu votre commande.
+            </p>
+          )}
         </div>
 
         {/* Référence */}
@@ -58,53 +63,20 @@ export default async function ConfirmationPage({
           <p className="text-xs text-gray-400 mt-1">Conservez cette référence</p>
         </div>
 
-        {/* Instructions paiement */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4">
-          <h2 className="font-semibold text-gray-900 mb-2">Comment payer ?</h2>
-
-          {/* Wave — lien envoyé par WhatsApp */}
-          <div className="bg-[#1A73E8]/5 border border-[#1A73E8]/20 rounded-2xl px-5 py-4 mb-3">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-6 h-6 rounded-full bg-[#1A73E8] flex items-center justify-center text-white text-xs font-bold">W</div>
-              <span className="text-sm font-bold text-[#1A73E8]">Wave</span>
-            </div>
-            <p className="text-sm text-gray-700">
-              Nous vous enverrons un <strong>lien de paiement Wave</strong> directement par WhatsApp sous peu. Cliquez dessus pour payer en un tap.
-            </p>
-          </div>
-
-          {/* Orange Money — numéro + copier */}
-          <div className="border border-gray-100 rounded-2xl px-5 py-4 mb-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold px-2 py-1 rounded-full bg-orange-100 text-orange-700">Orange Money</span>
-              <CopyButton text="0704363081" />
-            </div>
-            <p className="text-2xl font-mono font-bold text-gray-900">07 04 36 30 81</p>
-            <p className="text-xs text-gray-500 mt-1">
-              Envoyez <span className="font-semibold">{(premierMontant * (commande?.quantite ?? 1)).toLocaleString('fr-CI')} FCFA</span> à ce numéro
-            </p>
-          </div>
-
-          <div className="bg-[#1D9E75]/5 rounded-xl p-3">
-            <p className="text-xs text-[#1D9E75] font-medium">
-              Mentionnez la référence <strong>{ref}</strong> dans le commentaire de votre paiement.
-            </p>
-          </div>
-        </div>
-
+        {/* Calendrier prévente */}
         {isPrevente && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800 mb-4">
-            <p className="font-semibold mb-1">Calendrier prévente</p>
-            <div className="space-y-1">
-              <div className="flex justify-between">
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-4">
+            <p className="font-semibold text-amber-800 mb-2">Votre calendrier de paiement</p>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between text-amber-900">
                 <span>1er versement (maintenant)</span>
-                <span className="font-medium">15 000 FCFA</span>
+                <span className="font-bold">15 000 FCFA</span>
               </div>
-              <div className="flex justify-between text-amber-600">
+              <div className="flex justify-between text-amber-700">
                 <span>2e versement</span>
                 <span className="font-medium">15 000 FCFA</span>
               </div>
-              <div className="flex justify-between text-amber-600">
+              <div className="flex justify-between text-amber-700">
                 <span>3e versement (avant livraison)</span>
                 <span className="font-medium">13 000 FCFA</span>
               </div>
@@ -112,15 +84,16 @@ export default async function ConfirmationPage({
           </div>
         )}
 
+        {/* Calendrier réservation */}
         {isReservation && (
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800 mb-4">
-            <p className="font-semibold mb-1">Votre réservation</p>
-            <div className="space-y-1">
-              <div className="flex justify-between">
-                <span>Acompte maintenant</span>
-                <span className="font-medium">15 000 FCFA</span>
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 mb-4">
+            <p className="font-semibold text-blue-800 mb-2">Votre calendrier de paiement</p>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between text-blue-900">
+                <span>Acompte (maintenant)</span>
+                <span className="font-bold">15 000 FCFA</span>
               </div>
-              <div className="flex justify-between text-blue-600">
+              <div className="flex justify-between text-blue-700">
                 <span>Solde à la livraison</span>
                 <span className="font-medium">28 000 FCFA</span>
               </div>
@@ -128,15 +101,28 @@ export default async function ConfirmationPage({
           </div>
         )}
 
+        {/* Sélection mode de paiement */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4">
+          <p className="text-sm font-bold text-gray-900 mb-1">
+            Montant à payer maintenant :{' '}
+            <span className="text-[#1D9E75]">{premierMontant.toLocaleString('fr-CI')} FCFA</span>
+          </p>
+          <p className="text-xs text-gray-400 mb-5">Choisissez comment vous souhaitez payer</p>
+
+          <PaymentMethodSelector
+            commandeId={commande?.id ?? null}
+            montant={premierMontant}
+            reference={ref}
+            telephone={telephone}
+          />
+        </div>
+
         <p className="text-center text-xs text-gray-400 mt-2">
           Notre équipe vous contactera pour confirmer la réception du paiement.
         </p>
 
         <div className="mt-6 text-center">
-          <Link
-            href="/commander"
-            className="text-sm text-[#1D9E75] font-medium hover:underline"
-          >
+          <Link href="/commander" className="text-sm text-[#1D9E75] font-medium hover:underline">
             Commander une autre fontaine
           </Link>
         </div>
