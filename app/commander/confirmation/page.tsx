@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { getSupabaseServerClient } from '@/lib/supabase'
+import CopyButton from './CopyButton'
 
 export default async function ConfirmationPage({
   searchParams,
@@ -59,35 +60,43 @@ export default async function ConfirmationPage({
 
         {/* Instructions paiement */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4">
-          <h2 className="font-semibold text-gray-900 mb-3">Comment payer ?</h2>
-          <p className="text-sm text-gray-600 mb-4">
-            Effectuez votre versement de{' '}
+          <h2 className="font-semibold text-gray-900 mb-1">Effectuez votre paiement</h2>
+          <p className="text-sm text-gray-500 mb-5">
+            Envoyez{' '}
             <span className="font-bold text-gray-900">
-              {premierMontant.toLocaleString('fr-CI')} FCFA
-            </span>{' '}
-            par Mobile Money :
+              {(premierMontant * (commande?.quantite ?? 1)).toLocaleString('fr-CI')} FCFA
+            </span>
+            {' '}via Wave ou Orange Money
           </p>
 
-          <div className="space-y-3">
+          {/* Numéro à envoyer */}
+          <div className="bg-gray-50 rounded-2xl p-5 mb-5 text-center">
+            <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold mb-2">Numéro à utiliser</p>
+            <p className="text-3xl font-mono font-bold text-gray-900 tracking-wider mb-3">07 04 36 30 81</p>
+            <CopyButton text="0704363081" />
+          </div>
+
+          {/* Étapes */}
+          <div className="space-y-3 mb-5">
             {[
-              { label: 'Orange Money', num: '07 04 36 30 81', color: 'bg-orange-100 text-orange-700' },
-              { label: 'MTN Mobile Money', num: '05 XX XX XX XX', color: 'bg-yellow-100 text-yellow-700' },
-              { label: 'Wave', num: '07 04 36 30 81', color: 'bg-blue-100 text-blue-700' },
-              { label: 'Moov Money', num: '01 XX XX XX XX', color: 'bg-teal-100 text-teal-700' },
-            ].map((op) => (
-              <div key={op.label} className="flex items-center justify-between">
-                <span className={`text-xs font-medium px-2 py-1 rounded-full ${op.color}`}>
-                  {op.label}
-                </span>
-                <span className="text-sm font-mono text-gray-700">{op.num}</span>
+              { step: '1', text: 'Ouvrez votre application Wave ou Orange Money' },
+              { step: '2', text: 'Appuyez sur « Envoyer » ou « Payer »' },
+              { step: '3', text: `Entrez le numéro ci-dessus et le montant de ${(premierMontant * (commande?.quantite ?? 1)).toLocaleString('fr-CI')} FCFA` },
+              { step: '4', text: `Dans le commentaire, écrivez la référence : ${ref}` },
+            ].map(({ step, text }) => (
+              <div key={step} className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-[#1D9E75] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+                  {step}
+                </div>
+                <p className="text-sm text-gray-600">{text}</p>
               </div>
             ))}
           </div>
 
-          <div className="mt-4 bg-[#1D9E75]/5 rounded-lg p-3">
-            <p className="text-xs text-[#1D9E75] font-medium">
-              Important : mentionnez la référence <strong>{ref}</strong> dans votre commentaire de paiement.
-            </p>
+          {/* Opérateurs acceptés */}
+          <div className="flex gap-2">
+            <span className="text-xs font-semibold px-3 py-1.5 rounded-full bg-[#1A73E8]/10 text-[#1A73E8]">Wave</span>
+            <span className="text-xs font-semibold px-3 py-1.5 rounded-full bg-orange-100 text-orange-700">Orange Money</span>
           </div>
         </div>
 

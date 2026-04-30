@@ -73,40 +73,61 @@ export async function createCommande(
     clientId = newClient.id
   }
 
-  // 2. Générer la référence DD-XXX
-  const { count } = await supabase
-    .from('commandes')
-    .select('*', { count: 'exact', head: true })
-  const nextNum = (count ?? 0) + 1
-  const reference = `DD-${String(nextNum).padStart(3, '0')}`
-
+  // 2. Calculer le montant
   const montantUnitaire =
     type === 'direct' ? MONTANT_DIRECT :
     type === 'reservation' ? MONTANT_RESERVATION_ACOMPTE + MONTANT_RESERVATION_SOLDE :
     MONTANT_TRANCHES.reduce((a, b) => a + b, 0)
   const montantTotal = montantUnitaire * quantite
 
-  // 3. Créer la commande
-  const { data: commande, error: commandeError } = await supabase
+  // 3. Créer la commande avec référence unique (retry si collision)
+  const { data: lastRef } = await supabase
     .from('commandes')
-    .insert({
-      reference,
-      client_id: clientId,
-      parrain_id: null,
-      type,
-      statut: 'en_attente',
-      zone,
-      montant_total: montantTotal,
-      quantite,
-    })
-    .select('id')
+    .select('reference')
+    .order('created_at', { ascending: false })
+    .limit(1)
     .single()
 
-  if (commandeError || !commande) {
-    return { error: `Erreur Supabase (commande) : ${commandeError?.message ?? 'réponse vide'}` }
+  const lastNum = lastRef?.reference
+    ? (parseInt(lastRef.reference.replace('DD-', ''), 10) || 0)
+    : 0
+
+  let commande: { id: string; reference: string } | null = null
+  let commandeError: { message: string } | null = null
+
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const reference = `DD-${String(lastNum + 1 + attempt).padStart(3, '0')}`
+    const { data, error } = await supabase
+      .from('commandes')
+      .insert({
+        reference,
+        client_id: clientId,
+        parrain_id: null,
+        type,
+        statut: 'en_attente',
+        zone,
+        montant_total: montantTotal,
+        quantite,
+      })
+      .select('id, reference')
+      .single()
+
+    if (!error) {
+      commande = data
+      break
+    }
+    if (error.code === '23505' || error.message?.includes('duplicate key')) continue
+    commandeError = error
+    break
   }
 
-  // 4. Vérifier et associer le parrain
+  if (!commande) {
+    return { error: `Erreur Supabase (commande) : ${commandeError?.message ?? 'impossible de générer une référence unique'}` }
+  }
+
+  const reference = commande.reference
+
+  // 4. Vérifier et associer le parrain (commission créée au 1er paiement, pas ici)
   if (code_parrain) {
     const { data: parrain } = await supabase
       .from('parrains')
@@ -120,13 +141,6 @@ export async function createCommande(
         .from('commandes')
         .update({ parrain_id: parrain.id })
         .eq('id', commande.id)
-
-      await supabase.from('commissions').insert({
-        parrain_id: parrain.id,
-        commande_id: commande.id,
-        montant: MONTANT_COMMISSION,
-        statut: 'due',
-      })
     }
   }
 
@@ -152,7 +166,7 @@ export async function enregistrerPaiement(
   // Récupérer la commande et ses paiements existants
   const { data: commande } = await supabase
     .from('commandes')
-    .select('type, statut')
+    .select('type, statut, parrain_id')
     .eq('id', commande_id)
     .single()
 
@@ -203,6 +217,16 @@ export async function enregistrerPaiement(
     .from('commandes')
     .update({ statut: nouveauStatut })
     .eq('id', commande_id)
+
+  // Créer la commission au 1er paiement si parrain associé
+  if (numeroTranche === 1 && commande.parrain_id) {
+    await supabase.from('commissions').insert({
+      parrain_id: commande.parrain_id,
+      commande_id,
+      montant: MONTANT_COMMISSION,
+      statut: 'due',
+    })
+  }
 
   revalidatePath('/admin')
   return { error: null, success: true }
